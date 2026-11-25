@@ -1,0 +1,18 @@
+# Copy to gradle.properties (project or ~/.gradle) — do not commit secrets.
+# Used by app/build.gradle.kts BuildConfig + manifest placeholders.
+#
+# DEEP_LINK_HOST / ALLOWED_HOSTS = hostname only (no https://, no path).
+# API_BASE_URL must include /api/v1.
+# WEB_FALLBACK_BASE_URL = admin origin that serves /deeplink (no trailing slash).
+#
+# Production (CareerWill):
+DEEP_LINK_HOST=cwsu.crwilladmin.com
+ALLOWED_HOSTS=cwsu.crwilladmin.com
+API_BASE_URL=https://urlshortner-api.crwilladmin.com/api/v1
+WEB_FALLBACK_BASE_URL=https://urlshortner.crwilladmin.com
+#
+# Local (cloudflared) — paste short / api / admin tunnel hosts from Track A runbook:
+# DEEP_LINK_HOST=xxxx.trycloudflare.com
+# ALLOWED_HOSTS=xxxx.trycloudflare.com
+# API_BASE_URL=https://yyyy.trycloudflare.com/api/v1
+# WEB_FALLBACK_BASE_URL=https://zzzz.trycloudflare.com

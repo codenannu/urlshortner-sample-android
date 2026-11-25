@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Account &amp; data deletion — Shortener Deep Link Sample</title>
+  <meta name="description" content="How to remove Shortener Deep Link Sample and request related data deletion (com.infoezeer.urlshortner)" />
+  <style>
+    :root {
+      --ink: #18181b;
+      --muted: #52525b;
+      --border: #e4e4e7;
+      --bg: #fafafa;
+      --card: #ffffff;
+      --warn: #713f12;
+      --warn-bg: #fffbeb;
+      --warn-border: #fde68a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+      line-height: 1.55;
+    }
+    .wrap { max-width: 48rem; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+    header {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    h1 { font-size: 1.6rem; margin: 0 0 0.5rem; letter-spacing: -0.02em; }
+    h2 { font-size: 1.15rem; margin: 0 0 0.75rem; }
+    p, li { color: var(--ink); }
+    .meta { color: var(--muted); font-size: 0.9rem; margin: 0.25rem 0; }
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.85em;
+      background: #f4f4f5;
+      padding: 0.1rem 0.35rem;
+      border-radius: 0.25rem;
+    }
+    section {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1rem;
+    }
+    .callout {
+      background: var(--warn-bg);
+      border: 1px solid var(--warn-border);
+      color: var(--warn);
+      border-radius: 0.75rem;
+      padding: 1rem 1.1rem;
+      margin: 0.75rem 0;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.92rem;
+      margin: 0.75rem 0;
+    }
+    th, td {
+      border: 1px solid var(--border);
+      padding: 0.55rem 0.65rem;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { background: #f4f4f5; font-weight: 600; }
+    a { color: #1d4ed8; }
+    ol, ul { padding-left: 1.25rem; }
+    .badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      background: #e4e4e7;
+      color: #3f3f46;
+      padding: 0.2rem 0.5rem;
+      border-radius: 999px;
+      margin-bottom: 0.75rem;
+    }
+    footer {
+      margin-top: 2rem;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="badge">Account &amp; data deletion</div>
+      <h1>Shortener Deep Link Sample</h1>
+      <p class="meta"><strong>Package:</strong> <code>com.infoezeer.urlshortner</code></p>
+      <p class="meta"><strong>Effective / last updated:</strong> 24 November 2026</p>
+      <p class="meta"><strong>Publisher:</strong> CareerWill / InfoEzeer</p>
+      <p class="meta"><strong>Contact:</strong> <a href="mailto:support@careerwill.com">support@careerwill.com</a></p>
+      <p class="meta"><strong>Related:</strong> <a href="./privacy-policy.html">Privacy Policy</a> ·
+        <a href="/privacy">Hosted /privacy</a></p>
+    </header>
+
+    <section id="no-accounts">
+      <h2>1. Important: this App does not create user accounts</h2>
+      <div class="callout">
+        <strong>Google Play</strong> requires apps that support account creation to also offer account deletion.
+        <strong>Shortener Deep Link Sample does not create, register, or sign in user accounts.</strong>
+        There is no email/password login, social login, or in-app profile.
+      </div>
+      <p>Therefore:</p>
+      <ul>
+        <li>There is <strong>no in-app “Delete account” button</strong> because there is no account to delete.</li>
+        <li>This page explains how to <strong>remove the App</strong> and how to request deletion of related Shortener analytics that may have been created when short links were opened.</li>
+      </ul>
+      <p>
+        If you later add authentication to a production fork, you must update this page and provide an in-app or web
+        account-deletion flow that meets
+        <a href="https://support.google.com/googleplay/android-developer/answer/13315146" rel="noopener noreferrer" target="_blank">Play account deletion requirements</a>.
+      </p>
+    </section>
+
+    <section id="uninstall">
+      <h2>2. How to remove the App and on-device data</h2>
+      <ol>
+        <li>Open Android <strong>Settings → Apps → Shortener Deep Link Sample</strong> (or long-press the app icon → App info).</li>
+        <li>Tap <strong>Uninstall</strong>.</li>
+        <li>This removes the App binary and its private app storage on the device.</li>
+      </ol>
+      <p>
+        The App does not maintain a cloud user profile. Clearing App storage / uninstall is sufficient for
+        <strong>on-device</strong> sample data (UI state). Clipboard contents you copied manually may remain until you
+        clear the clipboard.
+      </p>
+    </section>
+
+    <section id="server">
+      <h2>3. Server-side / Shortener platform data</h2>
+      <p>Opening short URLs (via the App, a browser, or messaging apps) may create click / redirect analytics, for example:</p>
+      <ul>
+        <li>Short code / link id</li>
+        <li>Timestamp</li>
+        <li>Platform / User-Agent class</li>
+        <li>Hashed visitor identifiers</li>
+        <li>Optional app-open events (only if the build enabled <code>POST_APP_OPEN</code>)</li>
+      </ul>
+      <p>Uninstalling the Android App <strong>does not automatically erase</strong> those historical analytics rows.</p>
+
+      <h2 style="margin-top:1.5rem;font-size:1.05rem;">Request deletion of Shortener analytics linked to you</h2>
+      <p>
+        Email <a href="mailto:support@careerwill.com?subject=Data%20deletion%20request%20%E2%80%94%20Android%20sample%20com.infoezeer.urlshortner">support@careerwill.com</a>
+        with subject:
+      </p>
+      <p><code>Data deletion request — Android sample com.infoezeer.urlshortner</code></p>
+      <p>Include, if available:</p>
+      <ul>
+        <li>Approximate dates/times you opened short links</li>
+        <li>The short URL(s) or short codes</li>
+        <li>Your Android device model / OS version</li>
+        <li>Any other information that helps locate records</li>
+      </ul>
+      <p>
+        We will review and, where feasible and legally required, delete or anonymize identifiable analytics associated
+        with your request within a reasonable period (target: <strong>30 days</strong> after verification). Some
+        aggregated, non-identifying statistics may be retained.
+      </p>
+      <p>
+        <strong>Service levels (targets):</strong> acknowledge within <strong>7 days</strong>; complete delete /
+        anonymize where feasible within <strong>30 days</strong> after verification.
+      </p>
+    </section>
+
+    <section id="verification">
+      <h2>4. Identity verification</h2>
+      <p>
+        Because the App has no login, we may ask clarifying questions to reduce risk of deleting another person’s data.
+        We will not require unnecessary documents. Incomplete requests may be delayed until we can locate relevant
+        records. Privacy rights requests may also go to
+        <a href="mailto:privacy@careerwill.com">privacy@careerwill.com</a>.
+      </p>
+    </section>
+
+    <section id="exceptions">
+      <h2>5. What we will not delete (typical)</h2>
+      <ul>
+        <li>Content owned by other customers (unrelated short links).</li>
+        <li>Data we are required to retain for security, fraud prevention, or legal compliance.</li>
+        <li>Fully anonymized / aggregated metrics that cannot reasonably identify you.</li>
+        <li>Backup copies until rotated per platform backup retention (then expire).</li>
+      </ul>
+    </section>
+
+    <section id="play">
+      <h2>6. Play Console configuration guidance (operators)</h2>
+      <table>
+        <thead><tr><th>Play requirement</th><th>How this App complies</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Account creation?</td>
+            <td><strong>No</strong> — declare accordingly in Data safety / App content</td>
+          </tr>
+          <tr>
+            <td>Account deletion URL</td>
+            <td>Publish this page URL; state that accounts are not offered</td>
+          </tr>
+          <tr>
+            <td>In-app deletion</td>
+            <td>Not applicable while the App has no accounts</td>
+          </tr>
+          <tr>
+            <td>If accounts are added later</td>
+            <td>Add in-app delete + update this document before release</td>
+          </tr>
+          <tr>
+            <td>Privacy policy URL</td>
+            <td><a href="https://urlshortner.crwilladmin.com/privacy">https://urlshortner.crwilladmin.com/privacy</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="contact">
+      <h2>7. Contact</h2>
+      <p>Deletion / support: <a href="mailto:support@careerwill.com">support@careerwill.com</a></p>
+      <p>Privacy policy: <a href="./privacy-policy.html">privacy-policy.html</a> /
+        <a href="https://urlshortner.crwilladmin.com/privacy">https://urlshortner.crwilladmin.com/privacy</a></p>
+    </section>
+
+    <footer>
+      Canonical markdown: <code>docs/delete-account.md</code> · Hosted production URL:
+      <a href="https://urlshortner.crwilladmin.com/delete-account">https://urlshortner.crwilladmin.com/delete-account</a>
+    </footer>
+  </div>
+</body>
+</html>
