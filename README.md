@@ -2,10 +2,12 @@
 
 Client-shareable sample that demonstrates:
 
-1. Verified HTTPS **Android App Links** opening this app when installed  
-2. Extracting the short code from the incoming Intent  
+1. Verified HTTPS **Android App Links** opening this app when installed (Path 1 — WhatsApp tap)  
+2. Extracting the short code from the incoming Intent (including Chrome **intent://** Open in App from smart landing — Path 2 paste)  
 3. Calling `GET /api/v1/deep-links/resolve/{code}`  
 4. **DEEP_LINK** → display screen/params; **STANDARD** → open `destinationUrl` in the browser (classic shortener; no app payload)  
+
+**Paste (Path 2):** With redirect `SMART_BROWSER_LANDING=true`, Chrome paste shows a landing page; **Open in App** uses an Android intent that delivers the same HTTPS URI to this sample. There is no silent install check. See [smart-browser-landing.md](../docs/audit/smart-browser-landing.md).
 
 **Link types:** App Links (`pathPrefix="/"`) catch **every** path on the short host — WhatsApp will open the app for STANDARD and DEEP_LINK when the app is installed.  
 - **DEEP_LINK** → resolve → show screen/params.  

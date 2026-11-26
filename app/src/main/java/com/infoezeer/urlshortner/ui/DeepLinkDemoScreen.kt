@@ -142,7 +142,8 @@ private fun StatusCard(state: DeepLinkUiState) {
             Text(
                 when (state.launchKind) {
                     LaunchKind.Normal -> "Normal launch (no deep link)"
-                    LaunchKind.DeepLink -> "Deep link opened"
+                    LaunchKind.DeepLink ->
+                        "Deep link opened (App Links tap or browser Open in App intent)"
                     LaunchKind.DiagramInspector -> "Flow Inspector (d=1) — open in browser"
                 },
             )
