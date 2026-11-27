@@ -58,7 +58,7 @@ This policy covers **only the Android sample app**. Separate CareerWill products
 
 - **Incoming App Link URL** (HTTPS short URL opened into the App), including host and short-code path segment.
 - **Resolved deep-link payload** returned by the Shortener API (for example `screen`, `params`, campaign metadata). Displayed in the App UI for demonstration.
-- **Clipboard** — only if you tap **Copy URL** or **Copy JSON**; content is written to the system clipboard at your request and is not uploaded by the App for that action alone.
+- **Clipboard** — only if you tap **Copy URL** or **Copy JSON** on the demo action toolbar (two buttons per row); content is written to the system clipboard at your request and is not uploaded by the App for that action alone.
 - **In-memory UI state** while the App is running (cleared when you clear the screen or the process ends). The App does not maintain a persistent user profile store.
 
 ### 4.2 Information sent over the network

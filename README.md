@@ -7,7 +7,7 @@ Client-shareable sample that demonstrates:
 3. Calling `GET /api/v1/deep-links/resolve/{code}`  
 4. **DEEP_LINK** → display screen/params; **STANDARD** → open `destinationUrl` in the browser (classic shortener; no app payload)  
 
-**Type/paste (Path 2):** With redirect `SMART_BROWSER_LANDING=true`, Chrome shows a landing with **Open app**, **View content**, and **Get the app**. **Open app** uses an Android intent that delivers the same HTTPS URI to this sample (`applicationId` must match App Platform `packageName`). Address bar never auto-opens the app. See [smart-browser-landing.md](../docs/audit/smart-browser-landing.md).
+**Type/paste (Path 2):** With redirect `SMART_BROWSER_LANDING=true`, Chrome shows a minimal landing with stacked **Open app** / **Get the app** buttons and a muted **View content** text link. **Open app** uses an Android intent that delivers the same HTTPS URI to this sample (`applicationId` must match App Platform `packageName`). Address bar never auto-opens the app. See [smart-browser-landing.md](../docs/audit/smart-browser-landing.md).
 
 **Link types:** App Links (`pathPrefix="/"`) catch **every** path on the short host — WhatsApp will open the app for STANDARD and DEEP_LINK when the app is installed.  
 - **DEEP_LINK** → resolve → show screen/params.  
@@ -15,7 +15,7 @@ Client-shareable sample that demonstrates:
 For STANDARD that must never open the app, use a second short host without Asset Links (see API domain-association docs).
 
 **Package / applicationId:** `com.infoezeer.urlshortner` (see `app/build.gradle.kts`)  
-**Deferred (v1.5+):** Play Install Referrer → `POST /deep-links/deferred/claim` when Admin flag `deferred_deep_linking` is on. Requires a **Google Play** install (internal testing). Sideload will not provide `cw_dl`. Never log the full token.
+**Deferred (v1.5+):** Play Install Referrer → `POST /deep-links/deferred/claim` when Admin flag `deferred_deep_linking` is on. Smart landing **Get the app** and **Open app** (not-installed → Play fallback) share the same `cw_dl` Play URL. Requires a **Google Play** install (internal testing). Sideload will not provide `cw_dl`. Never log the full token.
 
 **Flow Inspector (`?d=1`):** If the incoming App Link includes exact `d=1`, the sample opens the **public** inspector at `{WEB_FALLBACK_BASE_URL}/deeplink/{code}?d=1&host=…` in the system browser instead of resolving the payload. Third-party apps should do the same, or users can use “Open in browser” — verified App Links may otherwise open the app and never hit the redirect handoff.
 
@@ -236,10 +236,22 @@ For local tunnels, replace the host with your short tunnel hostname. Full steps:
 | `d=1` stays in app | Tap **Open Flow Inspector**; set `WEB_FALLBACK_BASE_URL` to the admin/web host that serves `/deeplink` |
 | Domain not verified | SHA/package mismatch or `assetlinks` not reachable over HTTPS — see runbook troubleshooting |
 
+## Sample demo actions
+
+Toolbar actions are **two equal-width buttons per row** (narrow phones clipped a 4-button row):
+
+| Row | Actions |
+|---|---|
+| 1 | **Copy URL** · **Copy JSON** |
+| 2 | **Retry** (resolve) · **Retry deferred** (Install Referrer claim) |
+| 3 | **Open destination** · **Clear** |
+
+Clipboard writes happen only on explicit Copy taps (see [privacy-policy.md](docs/privacy-policy.md)).
+
 ## Project layout
 
 - `deeplink/` — config, URI parser, payload parser, HTTP resolver, ViewModel  
-- `ui/DeepLinkDemoScreen.kt` — demo UI  
+- `ui/DeepLinkDemoScreen.kt` — demo UI (paired action rows)  
 - `MainActivity.kt` — intent lifecycle (`singleTop` + `onNewIntent`)
 
 ## Security notes

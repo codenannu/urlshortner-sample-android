@@ -6,6 +6,7 @@ import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -95,48 +96,75 @@ fun DeepLinkDemoScreen(
         PayloadCard(state)
         DebugCard(state)
 
-        Row(
-            Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
+        // Exactly two equal-width actions per row — a single 4-button row clipped Clear on narrow phones.
+        ActionPairRow {
             OutlinedButton(
                 onClick = {
                     state.incomingUrl?.let { copy(context, "Incoming URL", it) }
                 },
                 enabled = !state.incomingUrl.isNullOrBlank(),
-            ) { Text("Copy URL") }
+                modifier = Modifier.weight(1f),
+            ) {
+                Text("Copy URL", maxLines = 1)
+            }
             OutlinedButton(
                 onClick = {
                     state.payloadJson?.let { copy(context, "Payload JSON", it) }
                 },
                 enabled = !state.payloadJson.isNullOrBlank(),
-            ) { Text("Copy JSON") }
+                modifier = Modifier.weight(1f),
+            ) {
+                Text("Copy JSON", maxLines = 1)
+            }
         }
-        Row(
-            Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
+        ActionPairRow {
             Button(
                 onClick = onRetry,
                 enabled =
                     state.launchKind == LaunchKind.DeepLink &&
                         !state.shortCode.isNullOrBlank() &&
                         state.resolution != ResolutionStatus.Loading,
-            ) { Text("Retry") }
+                modifier = Modifier.weight(1f),
+            ) {
+                Text("Retry", maxLines = 1)
+            }
             Button(
                 onClick = onRetryDeferred,
                 enabled =
                     state.launchKind == LaunchKind.Deferred &&
                         state.resolution != ResolutionStatus.Loading,
-            ) { Text("Retry deferred") }
+                modifier = Modifier.weight(1f),
+            ) {
+                Text("Retry deferred", maxLines = 1)
+            }
+        }
+        ActionPairRow {
             OutlinedButton(
                 onClick = onOpenDestination,
                 enabled = !state.openBrowserUrl.isNullOrBlank() || !state.incomingUrl.isNullOrBlank(),
-            ) { Text("Open destination") }
-            OutlinedButton(onClick = onClear) { Text("Clear") }
+                modifier = Modifier.weight(1f),
+            ) {
+                Text("Open destination", maxLines = 1)
+            }
+            OutlinedButton(
+                onClick = onClear,
+                modifier = Modifier.weight(1f),
+            ) {
+                Text("Clear", maxLines = 1)
+            }
         }
         Spacer(Modifier.height(24.dp))
     }
+}
+
+/** Two equal-width action slots; keeps sample toolbar readable on narrow devices. */
+@Composable
+private fun ActionPairRow(content: @Composable RowScope.() -> Unit) {
+    Row(
+        Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        content = content,
+    )
 }
 
 @Composable

@@ -22,8 +22,8 @@ android {
         minSdk = 24
         targetSdk = 37
         // Bump versionCode for every Play Console upload (must be higher than last published).
-        versionCode = 6
-        versionName = "1.5"
+        versionCode = 7
+        versionName = "1.6"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
