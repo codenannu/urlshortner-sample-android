@@ -17,6 +17,8 @@ enum class LaunchKind {
     DeepLink,
     /** Public Flow Inspector — open in external browser. */
     DiagramInspector,
+    /** First-launch Play Install Referrer deferred recovery. */
+    Deferred,
 }
 
 enum class ResolutionStatus {
@@ -53,17 +55,22 @@ class DeepLinkViewModel(
     private val parser: DeepLinkUriParser = DeepLinkUriParser,
     private val resolver: DeepLinkResolver = DeepLinkResolver(),
     private val config: DeepLinkConfig = DeepLinkConfig,
+    private val appContext: android.content.Context? = null,
 ) : ViewModel() {
     private val _state = MutableStateFlow(DeepLinkUiState())
     val state: StateFlow<DeepLinkUiState> = _state.asStateFlow()
 
     /** Prevents duplicate processing when the same Intent is delivered more than once. */
     private var lastHandledUri: String? = null
+    private var deferredAttempted = false
 
     fun onNewIntent(intent: Intent?) {
         handleIntent(intent, force = false)
     }
 
+    /**
+     * Startup precedence: fresh App Link Intent > deferred Install Referrer recovery > normal idle.
+     */
     fun handleIntent(intent: Intent?, force: Boolean = false) {
         val data: Uri? = intent?.data
         if (data == null) {
@@ -71,9 +78,10 @@ class DeepLinkViewModel(
                 _state.update {
                     it.copy(
                         launchKind = LaunchKind.Normal,
-                        rawApiNote = "Opened normally — waiting for an App Link.",
+                        rawApiNote = "Opened normally — attempting deferred Install Referrer recovery if available.",
                     )
                 }
+                maybeRecoverDeferred()
             }
             return
         }
@@ -177,6 +185,146 @@ class DeepLinkViewModel(
             )
     }
 
+    fun retryDeferredClaim() {
+        deferredAttempted = false
+        maybeRecoverDeferred(force = true)
+    }
+
+    private fun maybeRecoverDeferred(force: Boolean = false) {
+        val ctx = appContext ?: return
+        if (deferredAttempted && !force) return
+        deferredAttempted = true
+        viewModelScope.launch {
+            _state.update {
+                it.copy(
+                    launchKind = LaunchKind.Deferred,
+                    resolution = ResolutionStatus.Loading,
+                    rawApiNote = "Recovering Play Install Referrer…",
+                )
+            }
+            val store = DeferredRecoveryStore(ctx)
+            val recovery = InstallReferrerDeferredRecovery(ctx, store)
+            val result =
+                withContext(Dispatchers.IO) {
+                    recovery.recover()
+                }
+            when (result) {
+                is InstallReferrerDeferredRecovery.Result.Token -> {
+                    val installId = store.getOrCreateInstallId()
+                    val packageName = ctx.packageName
+                    val claim =
+                        withContext(Dispatchers.IO) {
+                            resolver.claimDeferred(result.token, installId, packageName)
+                        }
+                    when (claim) {
+                        is ResolveResult.Success -> {
+                            store.markClaimSucceeded()
+                            applyPayload(claim.payload, fromDeferred = true)
+                        }
+                        is ResolveResult.Failure -> {
+                            // Keep pending token for retry unless permanently invalid
+                            val permanent =
+                                claim.httpCode == 404 ||
+                                    claim.httpCode == 410 ||
+                                    claim.message.contains("TOKEN_", ignoreCase = true)
+                            if (permanent) {
+                                store.clearPendingToken()
+                                store.setReferrerTerminalState(DeferredRecoveryStore.STATE_INVALID)
+                            }
+                            _state.update {
+                                it.copy(
+                                    launchKind = LaunchKind.Deferred,
+                                    resolution = ResolutionStatus.Error,
+                                    errorMessage = claim.message,
+                                    rawApiNote =
+                                        "Deferred claim failed — token retained for retry unless permanent. " +
+                                            "Sideload installs have no Play referrer.",
+                                )
+                            }
+                        }
+                    }
+                }
+                is InstallReferrerDeferredRecovery.Result.Terminal -> {
+                    _state.update {
+                        it.copy(
+                            launchKind = LaunchKind.Normal,
+                            resolution = ResolutionStatus.Idle,
+                            rawApiNote =
+                                "Deferred recovery: ${result.message}. " +
+                                    "Re-open a short URL or use pending/claim after login for production apps.",
+                        )
+                    }
+                }
+                is InstallReferrerDeferredRecovery.Result.Retryable -> {
+                    _state.update {
+                        it.copy(
+                            launchKind = LaunchKind.Deferred,
+                            resolution = ResolutionStatus.Error,
+                            errorMessage = result.message,
+                            rawApiNote = "Install Referrer temporarily unavailable — retry later.",
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    private fun applyPayload(p: DeepLinkPayload, fromDeferred: Boolean) {
+        viewModelScope.launch {
+            if (p.isStandardRedirect) {
+                val dest = p.destinationUrl
+                _state.update {
+                    it.copy(
+                        launchKind = if (fromDeferred) LaunchKind.Deferred else LaunchKind.DeepLink,
+                        resolution =
+                            if (dest.isNullOrBlank()) ResolutionStatus.Error else ResolutionStatus.Success,
+                        screen = p.screen,
+                        paramsJson = p.paramsJson,
+                        metadataJson = p.metadataJson,
+                        requiresAuth = false,
+                        payloadJson = p.toPrettyJson(),
+                        errorMessage =
+                            if (dest.isNullOrBlank()) "STANDARD short link has no destinationUrl" else null,
+                        rawApiNote =
+                            if (fromDeferred) {
+                                "Deferred claim returned STANDARD — opening destinationUrl"
+                            } else {
+                                "STANDARD short link handoff"
+                            },
+                        openBrowserUrl = dest,
+                        finishAfterBrowserOpen = !dest.isNullOrBlank() && !fromDeferred,
+                    )
+                }
+                return@launch
+            }
+            withContext(Dispatchers.IO) { resolver.postAppOpen(p.linkCode) }
+            _state.update {
+                it.copy(
+                    launchKind = if (fromDeferred) LaunchKind.Deferred else LaunchKind.DeepLink,
+                    resolution = ResolutionStatus.Success,
+                    screen = p.screen,
+                    paramsJson = p.paramsJson,
+                    metadataJson = p.metadataJson,
+                    requiresAuth = p.requiresAuth,
+                    payloadJson = p.toPrettyJson(),
+                    errorMessage = null,
+                    shortCode = p.linkCode,
+                    rawApiNote =
+                        if (fromDeferred) {
+                            "Deferred claim succeeded via Play Install Referrer → same payload as resolve. " +
+                                if (p.requiresAuth) {
+                                    "requiresAuth=true — production apps must stash route until login."
+                                } else {
+                                    ""
+                                }
+                        } else {
+                            "DEEP_LINK resolved via GET /deep-links/resolve/${p.linkCode}"
+                        },
+                )
+            }
+        }
+    }
+
     private fun resolve(code: String, host: String?) {
         viewModelScope.launch {
             val result =
@@ -185,45 +333,9 @@ class DeepLinkViewModel(
                 }
             when (result) {
                 is ResolveResult.Success -> {
-                    val p = result.payload
-                    if (p.isStandardRedirect) {
-                        val dest = p.destinationUrl
-                        _state.update {
-                            it.copy(
-                                resolution = if (dest.isNullOrBlank()) ResolutionStatus.Error else ResolutionStatus.Success,
-                                screen = p.screen,
-                                paramsJson = p.paramsJson,
-                                metadataJson = p.metadataJson,
-                                requiresAuth = false,
-                                payloadJson = p.toPrettyJson(),
-                                errorMessage =
-                                    if (dest.isNullOrBlank()) {
-                                        "STANDARD short link has no destinationUrl"
-                                    } else {
-                                        null
-                                    },
-                                rawApiNote =
-                                    "STANDARD short link (WhatsApp/App Links may open the app first). " +
-                                        "Handing off to browser → destinationUrl, then closing the activity. " +
-                                        "Use DEEP_LINK for in-app screen/params.",
-                                openBrowserUrl = dest,
-                                finishAfterBrowserOpen = !dest.isNullOrBlank(),
-                            )
-                        }
-                        return@launch
-                    }
-                    withContext(Dispatchers.IO) { resolver.postAppOpen(p.linkCode) }
-                    _state.update {
-                        it.copy(
-                            resolution = ResolutionStatus.Success,
-                            screen = p.screen,
-                            paramsJson = p.paramsJson,
-                            metadataJson = p.metadataJson,
-                            requiresAuth = p.requiresAuth,
-                            payloadJson = p.toPrettyJson(),
-                            errorMessage = null,
-                            rawApiNote = "DEEP_LINK resolved via GET /deep-links/resolve/$code",
-                        )
+                    applyPayload(result.payload, fromDeferred = false)
+                    if (result.payload.isStandardRedirect) {
+                        // applyPayload already set browser handoff for STANDARD
                     }
                 }
                 is ResolveResult.Failure -> {

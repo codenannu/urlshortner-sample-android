@@ -36,6 +36,7 @@ fun DeepLinkDemoScreen(
     onClear: () -> Unit,
     onOpenInspector: () -> Unit = {},
     onOpenDestination: () -> Unit = {},
+    onRetryDeferred: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
@@ -50,8 +51,9 @@ fun DeepLinkDemoScreen(
         Text("Shortener Android Sample", style = MaterialTheme.typography.headlineSmall)
         Text(
             "DEEP_LINK: App Links → resolve API → show screen/params. " +
-                "STANDARD: classic short URL — no app payload; sample opens destinationUrl in the browser. " +
-                "?d=1 opens Flow Inspector. Deferred install-referrer is Not supported.",
+                "STANDARD: classic short URL — sample opens destinationUrl in the browser. " +
+                "?d=1 opens Flow Inspector. " +
+                "Deferred: Play Install Referrer → claim API (Google Play installs when flag enabled).",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -121,6 +123,12 @@ fun DeepLinkDemoScreen(
                         !state.shortCode.isNullOrBlank() &&
                         state.resolution != ResolutionStatus.Loading,
             ) { Text("Retry") }
+            Button(
+                onClick = onRetryDeferred,
+                enabled =
+                    state.launchKind == LaunchKind.Deferred &&
+                        state.resolution != ResolutionStatus.Loading,
+            ) { Text("Retry deferred") }
             OutlinedButton(
                 onClick = onOpenDestination,
                 enabled = !state.openBrowserUrl.isNullOrBlank() || !state.incomingUrl.isNullOrBlank(),
@@ -145,6 +153,7 @@ private fun StatusCard(state: DeepLinkUiState) {
                     LaunchKind.DeepLink ->
                         "Deep link opened (App Links tap or browser Open in App intent)"
                     LaunchKind.DiagramInspector -> "Flow Inspector (d=1) — open in browser"
+                    LaunchKind.Deferred -> "Deferred recovery (Play Install Referrer → claim)"
                 },
             )
             Text("Incoming URL: ${state.incomingUrl ?: "—"}", fontFamily = FontFamily.Monospace)

@@ -3,11 +3,11 @@
 Client-shareable sample that demonstrates:
 
 1. Verified HTTPS **Android App Links** opening this app when installed (Path 1 — WhatsApp tap)  
-2. Extracting the short code from the incoming Intent (including Chrome **intent://** Open in App from smart landing — Path 2 paste)  
+2. Extracting the short code from the incoming Intent (including Chrome **intent://** **Open app** from smart landing — Path 2 type/paste)  
 3. Calling `GET /api/v1/deep-links/resolve/{code}`  
 4. **DEEP_LINK** → display screen/params; **STANDARD** → open `destinationUrl` in the browser (classic shortener; no app payload)  
 
-**Paste (Path 2):** With redirect `SMART_BROWSER_LANDING=true`, Chrome paste shows a landing page; **Open in App** uses an Android intent that delivers the same HTTPS URI to this sample. There is no silent install check. See [smart-browser-landing.md](../docs/audit/smart-browser-landing.md).
+**Type/paste (Path 2):** With redirect `SMART_BROWSER_LANDING=true`, Chrome shows a landing with **Open app**, **View content**, and **Get the app**. **Open app** uses an Android intent that delivers the same HTTPS URI to this sample (`applicationId` must match App Platform `packageName`). Address bar never auto-opens the app. See [smart-browser-landing.md](../docs/audit/smart-browser-landing.md).
 
 **Link types:** App Links (`pathPrefix="/"`) catch **every** path on the short host — WhatsApp will open the app for STANDARD and DEEP_LINK when the app is installed.  
 - **DEEP_LINK** → resolve → show screen/params.  
@@ -15,7 +15,7 @@ Client-shareable sample that demonstrates:
 For STANDARD that must never open the app, use a second short host without Asset Links (see API domain-association docs).
 
 **Package / applicationId:** `com.infoezeer.urlshortner` (see `app/build.gradle.kts`)  
-**Not supported in this sample:** Play Install Referrer deferred deep linking after install. After a Play Store install, the user must open a short URL again (or use authenticated pending/claim on the backend).
+**Deferred (v1.5+):** Play Install Referrer → `POST /deep-links/deferred/claim` when Admin flag `deferred_deep_linking` is on. Requires a **Google Play** install (internal testing). Sideload will not provide `cw_dl`. Never log the full token.
 
 **Flow Inspector (`?d=1`):** If the incoming App Link includes exact `d=1`, the sample opens the **public** inspector at `{WEB_FALLBACK_BASE_URL}/deeplink/{code}?d=1&host=…` in the system browser instead of resolving the payload. Third-party apps should do the same, or users can use “Open in browser” — verified App Links may otherwise open the app and never hit the redirect handoff.
 
@@ -195,9 +195,15 @@ Or Android Studio → Run → select the physical device.
 - Per-link `androidUrl` override  
 - Authenticated `pending` / `claim` for login-gated screens  
 
-### Not supported (sample v1)
+### Deferred (Play internal testing)
 
-- Automatic payload recovery after Play Store install (Install Referrer)
+1. Enable Admin Setting `deferred_deep_linking`.
+2. Ensure App Platform `packageName` = `com.infoezeer.urlshortner` and Play store URL matches.
+3. Upload a signed build to Play **internal testing**; install from Play (not sideload).
+4. Click short link → Get the app → install → open app cold.
+5. Sample recovers referrer → claims → shows payload. Logcat tag `DeferredRecovery` (token redacted).
+
+Sideload / flag off: no automatic deferred payload — re-open short URL.
 
 ## Verify App Links
 
@@ -218,13 +224,14 @@ For local tunnels, replace the host with your short tunnel hostname. Full steps:
 | App installed + verified | OS opens this app → payload on screen |
 | App installed + `?d=1` (exact first) | Sample opens **Flow Inspector** in system browser (`WEB_FALLBACK_BASE_URL/deeplink/{code}?d=1&host=…`); UI shows Open Flow Inspector |
 | App not installed | Browser → 302 Play Store (or interstitial with Play CTA) |
-| After fresh install | **No** automatic deferred payload |
+| After fresh Play install (flag on) | Deferred claim → payload on screen |
+| After sideload / flag off | No automatic deferred payload — re-open short URL |
 
 ## Troubleshooting (Android Studio)
 
 | Error | Fix |
 |---|---|
-| `'when' expression must be exhaustive` / missing `DiagramInspector` | Ensure `DeepLinkDemoScreen` handles all `LaunchKind` values (`Normal`, `DeepLink`, `DiagramInspector`) |
+| `'when' expression must be exhaustive` | Ensure `DeepLinkDemoScreen` handles all `LaunchKind` values (`Normal`, `DeepLink`, `DiagramInspector`, `Deferred`) |
 | Resolve fails / connection refused | Set `API_BASE_URL` in `gradle.properties`; use HTTPS (tunnel or prod) — sample does not allow cleartext |
 | `d=1` stays in app | Tap **Open Flow Inspector**; set `WEB_FALLBACK_BASE_URL` to the admin/web host that serves `/deeplink` |
 | Domain not verified | SHA/package mismatch or `assetlinks` not reachable over HTTPS — see runbook troubleshooting |

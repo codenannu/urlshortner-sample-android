@@ -15,11 +15,14 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import com.infoezeer.urlshortner.deeplink.DeepLinkViewModel
+import com.infoezeer.urlshortner.deeplink.DeepLinkViewModelFactory
 import com.infoezeer.urlshortner.ui.DeepLinkDemoScreen
 import com.infoezeer.urlshortner.ui.theme.ShortnerAndroidTheme
 
 class MainActivity : ComponentActivity() {
-    private val deepLinkViewModel: DeepLinkViewModel by viewModels()
+    private val deepLinkViewModel: DeepLinkViewModel by viewModels {
+        DeepLinkViewModelFactory(applicationContext)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,6 +54,7 @@ class MainActivity : ComponentActivity() {
                         onClear = deepLinkViewModel::clear,
                         onOpenInspector = deepLinkViewModel::reopenInspector,
                         onOpenDestination = deepLinkViewModel::openDestinationInBrowser,
+                        onRetryDeferred = deepLinkViewModel::retryDeferredClaim,
                         modifier = Modifier.padding(innerPadding),
                     )
                 }

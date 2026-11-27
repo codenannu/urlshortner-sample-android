@@ -70,6 +70,47 @@ class DeepLinkResolver(
         }
     }
 
+    /**
+     * Claim deferred token from Play Install Referrer.
+     * Never log the full [token].
+     */
+    fun claimDeferred(
+        token: String,
+        installId: String,
+        packageName: String,
+    ): ResolveResult {
+        val json =
+            org.json.JSONObject()
+                .put("token", token)
+                .put("installId", installId)
+                .put("packageName", packageName)
+                .put("platform", "android")
+                .toString()
+        return try {
+            val request =
+                Request.Builder()
+                    .url("${config.apiBaseUrl}/deep-links/deferred/claim")
+                    .post(json.toRequestBody("application/json".toMediaType()))
+                    .build()
+            client.newCall(request).execute().use { response ->
+                val body = response.body?.string().orEmpty()
+                if (config.debugLogging) {
+                    Log.d(
+                        TAG,
+                        "deferred claim ${InstallReferrerParser.redact(token)} → HTTP ${response.code}",
+                    )
+                }
+                if (!response.isSuccessful) {
+                    return ResolveResult.Failure(parseErrorMessage(body, response.code), response.code)
+                }
+                ResolveResult.Success(DeepLinkPayloadParser.parseEnvelope(body))
+            }
+        } catch (e: Exception) {
+            if (config.debugLogging) Log.e(TAG, "deferred claim failed", e)
+            ResolveResult.Failure(e.message ?: "Network error")
+        }
+    }
+
     companion object {
         private const val TAG = "DeepLinkResolver"
 
